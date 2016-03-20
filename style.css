@@ -8,6 +8,8 @@ element {
     position: absolute;
     top: 15;
     left: 15;
+    width: 8%;
+    text-align: center;
     background-color: #000000;
     color: #CCCCCC;
     z-index: 1;

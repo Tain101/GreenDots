@@ -4,7 +4,7 @@ function myButtonClick() {
     //in delay seconds,
     var delay = 3;
     //record for duration frames
-    var duration = 60*2;
+    var duration = 60 * 2;
 
     var interval = setInterval(buttonCountdown, 1000);
     myButton.innerHTML = delay--;
@@ -16,11 +16,25 @@ function myButtonClick() {
             clearInterval(interval);
             var mouse = new Mouse(currentMouse, duration);
             mouseList.push(mouse);
-            myButton.innerHTML = "button";
+            myButton.innerHTML = "Button";
         }
     }
+}
 
+function getButtonRect(button) {
+    var x, y, width, height;
 
+    y = button.offsetTop;
+    x = button.offsetLeft;
+    width = button.offsetWidth;
+    height = button.offsetHeight;
+
+    return {
+        x: x,
+        y: y,
+        width: width,
+        height: height
+    };
 }
 
 function gameLoop() {
@@ -35,6 +49,10 @@ function gameLoop() {
 
     //clear board
     context.clearRect(0, 0, canvas.width, canvas.height);
+
+    var buttonRect = getButtonRect(myButton);
+    context.fillStyle = 'yellow';
+    context.fillRect(buttonRect.x-10, buttonRect.y-10, buttonRect.width+20, buttonRect.height+20);
 
     //update all mice
     for (var i = 0; i < mouseList.length; i++) {
@@ -87,9 +105,9 @@ var Mouse = function(mouse, duration) {
     };
 
     this.update = function() {
-        if(!this.isLooping){
+        if (!this.isLooping) {
             this.draw(this.getFrame(this.delay));
-        } else{
+        } else {
             this.iterateFrame();
         }
     };
@@ -156,7 +174,7 @@ var context = canvas.getContext("2d");
 
 
 var currentMouse = new Mouse();
-currentMouse.color = 'transparent';
+currentMouse.color = 'red';
 var mouseList = [];
 mouseList.push(currentMouse);
 
