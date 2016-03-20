@@ -1,22 +1,22 @@
 var fps = 60;
 
-function myButtonClick() {
+function myButtonClick(button) {
     //in delay seconds,
     var delay = 3;
     //record for duration frames
     var duration = 60 * 2;
 
     var interval = setInterval(buttonCountdown, 1000);
-    myButton.innerHTML = delay--;
+    myButton.text = delay--;
     //make a loop from recording
 
     function buttonCountdown() {
-        myButton.innerHTML = delay--;
+        myButton.text = delay--;
         if (delay < 0) {
             clearInterval(interval);
             var mouse = new Mouse(currentMouse, duration);
             mouseList.push(mouse);
-            myButton.innerHTML = "Button";
+            myButton.text = "Button";
         }
     }
 }
@@ -55,12 +55,15 @@ function gameLoop() {
     for (var i = 0; i < mouseList.length; i++) {
         mouseList[i].update();
     }
+
+    myButton.draw();
 }
 
 var Frame = function(location, timeStamp) {
     this.x = location.x;
     this.y = location.y;
     this.timeStamp = timeStamp;
+    this.click = false;
 };
 
 var Button = function (rect, onClick) {
@@ -81,7 +84,7 @@ var Button = function (rect, onClick) {
         //draw text
         context.fillStyle = this.textColor;
         context.font = this.height + "px Arial";
-        context.fillText(this.text, this.x+this.width/3, this.y/2 + this.height);
+        context.fillText(this.text, this.x+this.width/3, this.y + this.height*9/10);
     };
 };
 
@@ -175,17 +178,23 @@ function getMousePos(canvas, evt) {
 }
 
 function clickEvent() {
-    currentMouse.isLooping = true;
-    currentMouse = new Mouse();
-    mouseList.push(currentMouse);
+    //if mouse is inside rect
+    var frame = currentMouse.getFrame(currentMouse.delay);
+    if(frame.x > myButton.x && frame.x < myButton.x + myButton.width){
+        if(frame.y > myButton.y && frame.y < myButton.y + myButton.height){
+            //call button.onClick
+            myButton.onClick();
+        }
+    }
+
 }
 
-var myButton = document.getElementById("myButton");
-console.log(myButton);
-myButton.addEventListener("click", myButtonClick, false);
+var myButton = new Button({x: 15, y: 15, width: 154, height: 21}, myButtonClick);
+// console.log(myButton);
+// myButton.addEventListener("click", myButtonClick, false);
 
 window.addEventListener('mousemove', updateMousePos, false);
-// window.addEventListener('click', clickEvent, false);
+window.addEventListener('click', clickEvent, false);
 
 var canvas = document.getElementById("myCanvas");
 var context = canvas.getContext("2d");
