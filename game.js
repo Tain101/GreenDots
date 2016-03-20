@@ -50,21 +50,39 @@ function gameLoop() {
     //clear board
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    var buttonRect = getButtonRect(myButton);
-    context.fillStyle = 'yellow';
-    context.fillRect(buttonRect.x-10, buttonRect.y-10, buttonRect.width+20, buttonRect.height+20);
 
     //update all mice
     for (var i = 0; i < mouseList.length; i++) {
         mouseList[i].update();
     }
-
 }
 
 var Frame = function(location, timeStamp) {
     this.x = location.x;
     this.y = location.y;
     this.timeStamp = timeStamp;
+};
+
+var Button = function (rect, onClick) {
+    this.x = rect.x;
+    this.y = rect.y;
+    this.width = rect.width;
+    this.height = rect.height;
+    this.color = 'black';
+    this.textColor = 'white';
+    this.text = "button";
+    this.onClick = onClick;
+
+    this.draw = function () {
+        //draw box
+        context.fillStyle = this.color;
+        context.fillRect(this.x, this.y, this.width, this.height);
+
+        //draw text
+        context.fillStyle = this.textColor;
+        context.font = this.height + "px Arial";
+        context.fillText(this.text, this.x+this.width/3, this.y/2 + this.height);
+    };
 };
 
 var Mouse = function(mouse, duration) {
