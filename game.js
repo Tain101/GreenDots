@@ -1,23 +1,29 @@
 var fps = 60;
 
 function myButtonClick(button) {
-    //in delay seconds,
-    var delay = 3;
-    //record for duration frames
-    var duration = 60 * 2;
+    if(!button.isPressed){
+        button.isPressed = true;
+        //in delay seconds,
+        var delay = 3;
+        //record for duration frames
+        var duration = 60 * 2;
 
-    var interval = setInterval(buttonCountdown, 1000);
-    myButton.text = delay--;
-    //make a loop from recording
-
-    function buttonCountdown() {
+        var interval;
         myButton.text = delay--;
-        if (delay < 0) {
-            clearInterval(interval);
-            var mouse = new Mouse(currentMouse, duration);
-            mouseList.push(mouse);
-            myButton.text = "Button";
+        //make a loop from recording
+
+        function buttonCountdown() {
+            myButton.text = delay--;
+            if (delay < 0) {
+                clearInterval(interval);
+                var mouse = new Mouse(currentMouse, duration);
+                mouseList.push(mouse);
+                myButton.text = "Button";
+                button.isPressed = false;
+            }
         }
+
+        interval = setInterval(buttonCountdown, 1000);
     }
 }
 
@@ -50,13 +56,14 @@ function gameLoop() {
     //clear board
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    myButton.draw();
 
     //update all mice
     for (var i = 0; i < mouseList.length; i++) {
         mouseList[i].update();
     }
 
-    myButton.draw();
+
 }
 
 var Frame = function(location, timeStamp) {
@@ -76,6 +83,9 @@ var Button = function (rect, onClick) {
     this.text = "button";
     this.onClick = onClick;
 
+    //flag to prevent loops
+    this.isPressed = false;
+
     this.draw = function () {
         //draw box
         context.fillStyle = this.color;
@@ -85,6 +95,19 @@ var Button = function (rect, onClick) {
         context.fillStyle = this.textColor;
         context.font = this.height + "px Arial";
         context.fillText(this.text, this.x+this.width/3, this.y + this.height*9/10);
+    };
+
+    this.checkFrame = function (frame) {
+        if(frame.x > this.x && frame.x < this.x + this.width){
+            if(frame.y > this.y && frame.y < this.y + this.height){
+                //call button.onClick
+                this.click();
+            }
+        }
+    };
+
+    this.click= function () {
+        this.onClick(this);
     };
 };
 
@@ -117,6 +140,16 @@ var Mouse = function(mouse, duration) {
 
     this.draw = function(frame) {
         if (!!frame) {
+            //TODO have the mice remember their original color
+            //or something smarter
+            if(frame.click){
+                this.color = 'blue';
+            } else if(this === currentMouse){
+                this.color = 'red';
+            } else {
+                this.color = 'green';
+            }
+
             context.beginPath();
             context.arc(frame.x, frame.y, this.radius, 0, 2 * Math.PI);
             context.fillStyle = this.color;
@@ -160,6 +193,9 @@ var Mouse = function(mouse, duration) {
     //play oldest frame, add back onto queue
     this.iterateFrame = function() {
         var frame = this.frameQueue.shift();
+        if(frame.click){
+            myButton.checkFrame(frame);
+        }
         this.draw(frame);
         this.frameQueue.push(frame);
     };
@@ -180,12 +216,8 @@ function getMousePos(canvas, evt) {
 function clickEvent() {
     //if mouse is inside rect
     var frame = currentMouse.getFrame(currentMouse.delay);
-    if(frame.x > myButton.x && frame.x < myButton.x + myButton.width){
-        if(frame.y > myButton.y && frame.y < myButton.y + myButton.height){
-            //call button.onClick
-            myButton.onClick();
-        }
-    }
+    frame.click = true;
+    myButton.checkFrame(frame);
 
 }
 
