@@ -1,20 +1,23 @@
 var fps = 60;
 
 function newMouseButtonClick(button) {
-    if(!button.isPressed){
+    //prevent spamming
+    if (!button.isPressed) {
         button.isPressed = true;
         //in delay seconds,
         var delay = 3;
         //record for duration frames
         var duration = 60 * 2;
-
         var interval;
+
         button.text = delay--;
         //make a loop from recording
 
+        /*jshint -W082 */
+        /*Suppress function inside block declaration*/
         function buttonCountdown() {
             button.text = delay--;
-            if(delay < duration/fps){
+            if (delay < duration / fps) {
                 button.color = 'blue';
             }
             if (delay < 0) {
@@ -31,24 +34,8 @@ function newMouseButtonClick(button) {
     }
 }
 
-function clickButtonClick (button) {
+function clickButtonClick(button) {
     button.text++;
-}
-
-function getButtonRect(button) {
-    var x, y, width, height;
-
-    y = button.offsetTop;
-    x = button.offsetLeft;
-    width = button.offsetWidth;
-    height = button.offsetHeight;
-
-    return {
-        x: x,
-        y: y,
-        width: width,
-        height: height
-    };
 }
 
 function gameLoop() {
@@ -65,7 +52,7 @@ function gameLoop() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     for (var i = 0; i < buttonList.length; i++) {
-            buttonList[i].draw();
+        buttonList[i].draw();
     }
 
     //update all mice
@@ -81,7 +68,7 @@ var Frame = function(location, timeStamp) {
     this.click = false;
 };
 
-var Button = function (rect, onClick) {
+var Button = function(rect, onClick) {
     this.x = rect.x;
     this.y = rect.y;
     this.width = rect.width;
@@ -94,7 +81,7 @@ var Button = function (rect, onClick) {
     //flag to prevent loops
     this.isPressed = false;
 
-    this.draw = function () {
+    this.draw = function() {
         //draw box
         context.fillStyle = this.color;
         context.fillRect(this.x, this.y, this.width, this.height);
@@ -102,19 +89,19 @@ var Button = function (rect, onClick) {
         //draw text
         context.fillStyle = this.textColor;
         context.font = this.height + "px Arial";
-        context.fillText(this.text, this.x+this.width/3, this.y + this.height*9/10);
+        context.fillText(this.text, this.x + this.width / 3, this.y + this.height * 9 / 10);
     };
 
-    this.checkFrame = function (frame) {
-        if(frame.x > this.x && frame.x < this.x + this.width){
-            if(frame.y > this.y && frame.y < this.y + this.height){
+    this.checkFrame = function(frame) {
+        if (frame.x > this.x && frame.x < this.x + this.width) {
+            if (frame.y > this.y && frame.y < this.y + this.height) {
                 //call button.onClick
                 this.click();
             }
         }
     };
 
-    this.click= function () {
+    this.click = function() {
         this.onClick(this);
     };
 };
@@ -150,9 +137,9 @@ var Mouse = function(mouse, duration) {
         if (!!frame) {
             //TODO have the mice remember their original color
             //or something smarter
-            if(frame.click){
+            if (frame.click) {
                 this.color = 'blue';
-            } else if(this === currentMouse){
+            } else if (this === currentMouse) {
                 this.color = 'red';
             } else {
                 this.color = 'green';
@@ -201,7 +188,7 @@ var Mouse = function(mouse, duration) {
     //play oldest frame, add back onto queue
     this.iterateFrame = function() {
         var frame = this.frameQueue.shift();
-        if(frame.click){
+        if (frame.click) {
             for (var i = 0; i < buttonList.length; i++) {
                 buttonList[i].checkFrame(frame);
             }
@@ -211,20 +198,20 @@ var Mouse = function(mouse, duration) {
     };
 };
 
-function updateMousePos(e) {
-    currentMousePos = getMousePos(canvas, e);
+
+function mouseMoveEvent(event) {
+    currentMousePos = getMousePos(canvas, event);
 }
 
-function getMousePos(canvas, evt) {
+function getMousePos(canvas, event) {
     var rect = canvas.getBoundingClientRect();
     return {
-        x: evt.clientX - rect.left,
-        y: evt.clientY - rect.top
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
     };
 }
 
-function clickEvent() {
-    //if mouse is inside rect
+function clickEvent(event) {//jshint ignore:line
     var frame = currentMouse.getFrame(currentMouse.delay);
     frame.click = true;
     for (var i = 0; i < buttonList.length; i++) {
@@ -233,14 +220,12 @@ function clickEvent() {
 
 }
 
-window.addEventListener('mousemove', updateMousePos, false);
+window.addEventListener('mousemove', mouseMoveEvent, false);
 window.addEventListener('click', clickEvent, false);
 
-var canvas = document.getElementById("myCanvas");
-var context = canvas.getContext("2d");
 
-var newMouseButton = new Button({x: 15, y: 15, width: 154, height: 21}, newMouseButtonClick);
-var clickButton = new Button({x: 550, y: 15, width: 154, height: 21}, clickButtonClick);
+var newMouseButton = new Button({ x: 15, y: 15, width: 154, height: 21 }, newMouseButtonClick);
+var clickButton = new Button({ x: 200, y: 15, width: 154, height: 21 }, clickButtonClick);
 clickButton.text = 0;
 var buttonList = [];
 buttonList.push(newMouseButton);
@@ -251,7 +236,8 @@ currentMouse.color = 'red';
 var mouseList = [];
 mouseList.push(currentMouse);
 
-
+var canvas = document.getElementById("myCanvas");
+var context = canvas.getContext("2d");
 
 var currentMousePos = { x: 0, y: 0 };
 
