@@ -1,6 +1,6 @@
 var fps = 60;
 
-function myButtonClick(button) {
+function newMouseButtonClick(button) {
     if(!button.isPressed){
         button.isPressed = true;
         //in delay seconds,
@@ -9,11 +9,11 @@ function myButtonClick(button) {
         var duration = 60 * 2;
 
         var interval;
-        myButton.text = delay--;
+        button.text = delay--;
         //make a loop from recording
 
         function buttonCountdown() {
-            myButton.text = delay--;
+            button.text = delay--;
             if(delay < duration/fps){
                 button.color = 'blue';
             }
@@ -21,7 +21,7 @@ function myButtonClick(button) {
                 clearInterval(interval);
                 var mouse = new Mouse(currentMouse, duration);
                 mouseList.push(mouse);
-                myButton.text = "Button";
+                button.text = "Button";
                 button.color = 'black';
                 button.isPressed = false;
             }
@@ -29,6 +29,10 @@ function myButtonClick(button) {
 
         interval = setInterval(buttonCountdown, 1000);
     }
+}
+
+function clickButtonClick (button) {
+    button.text++;
 }
 
 function getButtonRect(button) {
@@ -60,14 +64,14 @@ function gameLoop() {
     //clear board
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    myButton.draw();
+    for (var i = 0; i < buttonList.length; i++) {
+            buttonList[i].draw();
+    }
 
     //update all mice
     for (var i = 0; i < mouseList.length; i++) {
         mouseList[i].update();
     }
-
-
 }
 
 var Frame = function(location, timeStamp) {
@@ -198,7 +202,9 @@ var Mouse = function(mouse, duration) {
     this.iterateFrame = function() {
         var frame = this.frameQueue.shift();
         if(frame.click){
-            myButton.checkFrame(frame);
+            for (var i = 0; i < buttonList.length; i++) {
+                buttonList[i].checkFrame(frame);
+            }
         }
         this.draw(frame);
         this.frameQueue.push(frame);
@@ -221,13 +227,11 @@ function clickEvent() {
     //if mouse is inside rect
     var frame = currentMouse.getFrame(currentMouse.delay);
     frame.click = true;
-    myButton.checkFrame(frame);
+    for (var i = 0; i < buttonList.length; i++) {
+        buttonList[i].checkFrame(frame);
+    }
 
 }
-
-var myButton = new Button({x: 15, y: 15, width: 154, height: 21}, myButtonClick);
-// console.log(myButton);
-// myButton.addEventListener("click", myButtonClick, false);
 
 window.addEventListener('mousemove', updateMousePos, false);
 window.addEventListener('click', clickEvent, false);
@@ -235,11 +239,19 @@ window.addEventListener('click', clickEvent, false);
 var canvas = document.getElementById("myCanvas");
 var context = canvas.getContext("2d");
 
+var newMouseButton = new Button({x: 15, y: 15, width: 154, height: 21}, newMouseButtonClick);
+var clickButton = new Button({x: 550, y: 15, width: 154, height: 21}, clickButtonClick);
+clickButton.text = 0;
+var buttonList = [];
+buttonList.push(newMouseButton);
+buttonList.push(clickButton);
 
 var currentMouse = new Mouse();
 currentMouse.color = 'red';
 var mouseList = [];
 mouseList.push(currentMouse);
+
+
 
 var currentMousePos = { x: 0, y: 0 };
 
