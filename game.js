@@ -14,11 +14,15 @@ function myButtonClick(button) {
 
         function buttonCountdown() {
             myButton.text = delay--;
+            if(delay < duration/fps){
+                button.color = 'blue';
+            }
             if (delay < 0) {
                 clearInterval(interval);
                 var mouse = new Mouse(currentMouse, duration);
                 mouseList.push(mouse);
                 myButton.text = "Button";
+                button.color = 'black';
                 button.isPressed = false;
             }
         }
