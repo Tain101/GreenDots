@@ -1,15 +1,18 @@
+//TODO: this should only really contain metadata for running the game.
 var fps = 60;
 
 function newMouseButtonClick(button) {
-    //prevent spamming
-    if (!button.isPressed) {
-        button.isPressed = true;
-        //in delay seconds,
-        var delay = 3;
-        //record for duration frames
-        var duration = 60 * 2;
-        var interval;
+    var delay = 3;
+    var duration = 2 * fps;
+    var newMouseCost = 10;
 
+    if (game.money > newMouseCost && !button.isPressed) {
+        //prevent spamming
+        button.isPressed = true;
+
+        game.money -= newMouseCost;
+
+        var interval;
         button.text = delay--;
         //make a loop from recording
 
@@ -31,11 +34,13 @@ function newMouseButtonClick(button) {
         }
 
         interval = setInterval(buttonCountdown, 1000);
+
     }
 }
 
 function clickButtonClick(button) {
-    button.text++;
+    game.money++;
+    button.text = game.money;
 }
 
 function gameLoop() {
@@ -60,6 +65,10 @@ function gameLoop() {
         mouseList[i].update();
     }
 }
+
+var Game = function() {
+    this.money = 0;
+};
 
 var Frame = function(location, timeStamp) {
     this.x = location.x;
@@ -211,7 +220,7 @@ function getMousePos(canvas, event) {
     };
 }
 
-function clickEvent(event) {//jshint ignore:line
+function clickEvent(event) { //jshint ignore:line
     var frame = currentMouse.getFrame(currentMouse.delay);
     frame.click = true;
     for (var i = 0; i < buttonList.length; i++) {
@@ -221,6 +230,8 @@ function clickEvent(event) {//jshint ignore:line
 }
 
 window.addEventListener('mousemove', mouseMoveEvent, false);
+window.addEventListener('mousedown', mouseDownEvent, false);
+window.addEventListener('mouseup', mouseUpEvent, false);
 window.addEventListener('click', clickEvent, false);
 
 
@@ -239,7 +250,9 @@ mouseList.push(currentMouse);
 var canvas = document.getElementById("myCanvas");
 var context = canvas.getContext("2d");
 
-var currentMousePos = { x: 0, y: 0 };
+var currentMousePos = { x: -100, y: -100 };
+
+var game = new Game();
 
 console.log("Javascript Loaded! FPS: " + fps);
 setInterval(gameLoop, 1 / fps * 1000);
