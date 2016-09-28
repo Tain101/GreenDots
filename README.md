@@ -12,6 +12,7 @@ An Incremental based on super-imposed cursors. As you progress the game's layout
 * Add buttons horizontally to tab bar for each [currencyN].
 * If a row/column reaches beyond the edge of the screen, shift everything adding an adjacent col/row. 
 * If entire window is full, scale everything down by x% and redraw. probably down so that there are no repeat columns/rows
+
 ## Cursors
 * cursor should be numbered with corresponding button
 * cursor should start red, have yellow during recording, then go to green during playback
