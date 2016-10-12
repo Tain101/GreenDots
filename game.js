@@ -1,12 +1,24 @@
 //TODO: this should only really contain metadata for running the game.
-let FPS = 60;
+//Should there be abstraction between this page and interacting with the window/mouse?
+let FPS = 1;
 
-let Container = require('Container.js');
-let cursorList = [];
-let gameWindow = null;
+var canvas    = document.getElementById("myCanvas");
+canvas.width  = window.innerWidth;
+canvas.height = window.innerHeight;
+var context   = canvas.getContext("2d");
+
+
+let cursorList   = [];
+let gameWindow   = null;
+let gameInterval = null;
 
 function init() {
+    console.log("Initializing Game:");
+    console.log("  Generating Game Window:");
     gameWindow = generateGameWindow();
+    console.log("  Game Window Generated");
+    console.log("Game Initialized!")
+    gameInterval = setInterval(gameTick, 1 / FPS * 1000);
 }
 
 /**
@@ -16,141 +28,40 @@ function init() {
  */
 
 function generateGameWindow() {
-    let returnContainer       = new Container('vertical');
+    console.log("generateGameWindow()");
+    //generate Containers
+    let gameWindowContainter  = new Container('vertical');
     let bodyContainer         = new Container('horizontal');
     let cursorButtonContainer = new Container('vertical');
     let coinButtonContainer   = new Container('vertical');
-    returnContainer.add(bodyContainer);
+    gameWindowContainter.add(bodyContainer);
     bodyContainer.add(cursorButtonContainer, coinButtonContainer);
+
+    //generate starting buttons
+    let cursorButton = new Button();
+    let coinButton = new Button();
+
+    cursorButtonContainer.add(cursorButton);
+    coinButtonContainer.add(coinButton);
+    return gameWindowContainter;
 }
 
 function gameTick(){
-    canvas.clear();
-    for(cursor in cursorList){
-        cursor.tick();
-    }
-    gameWindow.tick();
-}
+    try{
+        //clear canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
 
-
-function newMouseButtonClick(button) {
-    var delay = 3;
-    var duration = 2 * fps;
-    var newMouseCost = 10;
-
-    if (game.money > newMouseCost && !button.isPressed) {
-        //prevent spamming
-        button.isPressed = true;
-
-        game.money -= newMouseCost;
-
-        var interval;
-        button.text = delay--;
-        //make a loop from recording
-
-        /*jshint -W082 */
-        /*Suppress function inside block declaration*/
-        function buttonCountdown() {
-            button.text = delay--;
-            if (delay < duration / fps) {
-                button.color = 'blue';
-            }
-            if (delay < 0) {
-                clearInterval(interval);
-                var mouse = new Mouse(currentMouse, duration);
-                mouseList.push(mouse);
-                button.text = "Button";
-                button.color = 'black';
-                button.isPressed = false;
-            }
+        //all cursors take action, in order that they were made
+        for (var i = 0; i < cursorList.length; i++) {
+            cursorList[i].tick();
         }
 
-        interval = setInterval(buttonCountdown, 1000);
-
+        //buttons & layout update last
+        gameWindow.draw();
+    }catch(err){
+        console.error(err);
+        clearInterval(gameInterval);
     }
-}
-
-function clickButtonClick(button) {
-    game.money++;
-    button.text = game.money;
-}
-
-function gameLoop() {
-    //update Canvas
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    //get mouse info
-    //record to current Mouse instance
-    currentMouse.pushFrame(currentMousePos, Date.now());
-
-
-    //clear board
-    context.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (var i = 0; i < buttonList.length; i++) {
-        buttonList[i].draw();
-    }
-
-    //update all mice
-    for (var i = 0; i < mouseList.length; i++) {
-        mouseList[i].update();
-    }
-}
-
-var Game = function() {
-    this.money = 0;
-};
-
-var Frame = function(location, timeStamp) {
-    this.x = location.x;
-    this.y = location.y;
-    this.timeStamp = timeStamp;
-    this.click = false;
-};
-
-var Button = function(rect, onClick) {
-    this.x = rect.x;
-    this.y = rect.y;
-    this.width = rect.width;
-    this.height = rect.height;
-    this.color = 'black';
-    this.textColor = 'white';
-    this.text = "button";
-    this.onClick = onClick;
-
-    //flag to prevent loops
-    this.isPressed = false;
-
-    this.draw = function() {
-        //draw box
-        context.fillStyle = this.color;
-        context.fillRect(this.x, this.y, this.width, this.height);
-
-        //draw text
-        context.fillStyle = this.textColor;
-        context.font = this.height + "px Arial";
-        context.fillText(this.text, this.x + this.width / 3, this.y + this.height * 9 / 10);
-    };
-
-    this.checkFrame = function(frame) {
-        if (frame.x > this.x && frame.x < this.x + this.width) {
-            if (frame.y > this.y && frame.y < this.y + this.height) {
-                //call button.onClick
-                this.click();
-            }
-        }
-    };
-
-    this.click = function() {
-        this.onClick(this);
-    };
-};
-
-
-
-function mouseMoveEvent(event) {
-    currentMousePos = getMousePos(canvas, event);
 }
 
 function getMousePos(canvas, event) {
@@ -161,39 +72,30 @@ function getMousePos(canvas, event) {
     };
 }
 
-function clickEvent(event) { //jshint ignore:line
-    var frame = currentMouse.getFrame(currentMouse.delay);
+function mouseMoveEvent(event) {
+    currentMousePos = getMousePos(canvas, event);
+}
+
+function mouseDownEvent(event) {
+    // body...
+}
+
+function mouseUpEvent(event) {
+    // body...
+}
+
+function clickEvent(event) {
+    let frame = currentMouse.getFrame(currentMouse.delay);
     frame.click = true;
     for (var i = 0; i < buttonList.length; i++) {
         buttonList[i].checkFrame(frame);
     }
-
 }
 
 window.addEventListener('mousemove', mouseMoveEvent, false);
 window.addEventListener('mousedown', mouseDownEvent, false);
-window.addEventListener('mouseup', mouseUpEvent, false);
-window.addEventListener('click', clickEvent, false);
+window.addEventListener('mouseup',   mouseUpEvent,   false);
+window.addEventListener('click',     clickEvent,     false);
 
-
-var newMouseButton = new Button({ x: 15, y: 15, width: 154, height: 21 }, newMouseButtonClick);
-var clickButton = new Button({ x: 200, y: 15, width: 154, height: 21 }, clickButtonClick);
-clickButton.text = 0;
-var buttonList = [];
-buttonList.push(newMouseButton);
-buttonList.push(clickButton);
-
-var currentMouse = new Mouse();
-currentMouse.color = 'red';
-var mouseList = [];
-mouseList.push(currentMouse);
-
-var canvas = document.getElementById("myCanvas");
-var context = canvas.getContext("2d");
-
-var currentMousePos = { x: -100, y: -100 };
-
-var game = new Game();
-
-console.log("Javascript Loaded! FPS: " + fps);
-setInterval(gameLoop, 1 / fps * 1000);
+console.log("Javascript Loaded! FPS: " + FPS);
+init();
